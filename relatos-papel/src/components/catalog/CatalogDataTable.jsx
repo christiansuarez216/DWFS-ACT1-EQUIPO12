@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import $ from "jquery";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { addToCart } from "../../utils/cartUtils";
 
 import "datatables.net";
 import "datatables.net-bs5";
@@ -116,13 +117,14 @@ export default function CatalogDataTable({ lang, rows, onReady }) {
                 className: "text-end",
                 render: {
                     display: (_, __, row) => `
-        <button class="iconBtn" data-action="view" data-href="${row.href}"
-            aria-label="${t("table.actions.details")}">
-            <i class="fa-regular fa-eye"></i>
-        </button>
-        <button class="iconBtn iconBtn--primary" aria-label="${t("table.actions.add")}">
-          <i class="fa-solid fa-cart-shopping"></i>
-        </button>
+                    <button class="iconBtn" data-action="view" data-href="${row.href}"
+                        aria-label="${t("table.actions.details")}">
+                        <i class="fa-regular fa-eye"></i>
+                    </button>
+                    <button class="iconBtn iconBtn--primary" data-action="add" data-id="${row.id}"
+                        aria-label="${t("table.actions.add")}">
+                        <i class="fa-solid fa-cart-plus"></i>
+                    </button>
       `
                 }
             }
@@ -146,30 +148,32 @@ export default function CatalogDataTable({ lang, rows, onReady }) {
     }, [rows, lang, dtLangUrl, t, onReady]);
 
     useEffect(() => {
-        if (!tableRef.current || clickBoundRef.current) return;
-
+        if (!tableRef.current || clickBoundRef.current)
+            return;
         const tableEl = tableRef.current;
-
         const handleClick = (e) => {
-            const btn = e.target.closest("button[data-action='view']");
-            if (!btn) return;
-
-            const slug = btn.getAttribute("data-href");
-            if (!slug) return;
-
-            console.log("CLICK EN VER:", slug);
-
-            navigate(`/${lang}/catalog/book/${slug}`);
+            const viewBtn = e.target.closest("button[data-action='view']");
+            const addBtn = e.target.closest("button[data-action='add']");
+            if (viewBtn) {
+                const slug = viewBtn.getAttribute("data-href");
+                if (slug) { navigate(`/${lang}/catalog/book/${slug}`); } return;
+            }
+            if (addBtn) {
+                const id = addBtn.getAttribute("data-id");
+                const book = rows.find((b) => b.id === id);
+                if (book) {
+                    addToCart(book);
+                    navigate(`/${lang}/cart`);
+                } return;
+            }
         };
-
         tableEl.addEventListener("click", handleClick);
         clickBoundRef.current = true;
-
         return () => {
             tableEl.removeEventListener("click", handleClick);
             clickBoundRef.current = false;
-        };
-    }, [lang, navigate]);
+            };
+        }, [lang, navigate, rows]);
 
     return (
         <table

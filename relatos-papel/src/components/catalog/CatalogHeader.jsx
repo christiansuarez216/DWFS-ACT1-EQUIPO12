@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams, Link } from "react-router-dom";
+import CartBadge from "../../components/cart/CartBadge";
 
 export default function CatalogHeader() {
   const { lang } = useParams();
@@ -23,7 +24,7 @@ export default function CatalogHeader() {
             to={`/${lang}/cart`}
             aria-label={t("header.cartAria")}
           >
-            <i className="fa-solid fa-cart-shopping" aria-hidden="true"></i>
+            <CartBadge />
           </Link>
 
           <a

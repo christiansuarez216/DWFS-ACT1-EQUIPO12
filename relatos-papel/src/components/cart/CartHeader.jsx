@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import CartBadge from "../../components/cart/CartBadge";
 
 export default function CartHeader({ lang, onGoLang }) {
   const { t } = useTranslation("cart");
@@ -11,6 +12,10 @@ export default function CartHeader({ lang, onGoLang }) {
           <Link className="catalog__langLink" to={`/${lang}/catalog`} aria-label={t("header.backToCatalog")}>
             <i className="fa-solid fa-arrow-left" aria-hidden="true"></i>
             <span>{t("header.backToCatalog")}</span>
+          </Link>
+
+          <Link to={`/${lang}/cart`} aria-label={t("header.viewCart")} className="catalog__langLink">
+            <CartBadge />
           </Link>
 
           <a
