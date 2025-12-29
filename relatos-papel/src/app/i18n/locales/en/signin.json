@@ -14,13 +14,25 @@
     "aria": "Sign in form",
     "email": {
       "label": "Email address",
-      "placeholder": "Enter your email address"
+      "placeholder": "Enter your email address",
+      "errors": {
+        "required": "Email is required.",
+        "invalid": "Please enter a valid email address."
+      }
     },
     "password": {
       "label": "Password",
       "placeholder": "Enter your password",
       "show": "Show password",
-      "hide": "Hide password"
+      "hide": "Hide password",
+      "errors": {
+        "required": "Password is required.",
+        "min": "Password must be at least 8 characters long.",
+        "max": "Password must not exceed 64 characters.",
+        "upper": "Must include at least one uppercase letter.",
+        "lower": "Must include at least one lowercase letter.",
+        "number": "Must include at least one number."
+      }
     },
     "forgot": "Forgot your password?",
     "submit": "Sign in",

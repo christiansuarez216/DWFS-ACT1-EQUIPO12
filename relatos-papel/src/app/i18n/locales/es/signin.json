@@ -14,13 +14,25 @@
     "aria": "Formulario de inicio de sesión",
     "email": {
       "label": "Correo electrónico",
-      "placeholder": "Ingresar correo electrónico"
+      "placeholder": "Ingresar correo electrónico",
+      "errors": {
+        "invalid": "El correo electrónico no es válido",
+        "required": "El correo es obligatorio"
+      }
     },
     "password": {
       "label": "Contraseña",
       "placeholder": "Ingresar contraseña",
       "show": "Mostrar contraseña",
-      "hide": "Ocultar contraseña"
+      "hide": "Ocultar contraseña",
+      "errors": {
+        "required": "La contraseña es obligatoria.",
+        "min": "La contraseña debe tener al menos 8 caracteres.",
+        "max": "La contraseña no debe exceder 64 caracteres.",
+        "upper": "Debe incluir al menos una letra mayúscula.",
+        "lower": "Debe incluir al menos una letra minúscula.",
+        "number": "Debe incluir al menos un número."
+      }
     },
     "forgot": "¿Olvidaste la contraseña?",
     "submit": "Iniciar sesión",
