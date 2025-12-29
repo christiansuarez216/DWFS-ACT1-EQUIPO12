@@ -67,7 +67,7 @@ export default function RecommendationsPanel({ lang }) {
 
                 <a
                   className="recItem__link"
-                  href={b.href ? `/catalog/book/${b.href}` : "#"}
+                  href={b.href ? `/${lang}/catalog/book/${b.href}` : "#"}
                   aria-label={t("recommendations.detailsAria", {
                     title: b.title?.[lang] || ""
                   })}

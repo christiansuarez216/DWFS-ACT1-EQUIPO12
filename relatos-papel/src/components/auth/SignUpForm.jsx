@@ -57,6 +57,7 @@ export default function SignUpForm() {
                 };
 
                 // Llamado a la API
+                
                 console.log("Datos", payload);
 
                 //Redireccion

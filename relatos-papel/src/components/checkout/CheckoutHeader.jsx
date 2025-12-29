@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import CartBadge from "../../components/cart/CartBadge";
 
 export default function CheckoutHeader() {
   const { lang } = useParams();
@@ -16,7 +17,7 @@ export default function CheckoutHeader() {
       <div className="container-fluid">
         <div className="d-flex justify-content-end gap-3 mb-2" aria-label="Acciones y selector de idioma">
           <Link className="catalog__langLink" to={`/${lang}/cart`} aria-label={lang === "en" ? "View cart" : "Ver carrito"}>
-            <i className="fa-solid fa-cart-shopping" aria-hidden="true"></i>
+            <CartBadge />
           </Link>
 
           <a

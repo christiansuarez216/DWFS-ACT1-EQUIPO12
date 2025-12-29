@@ -34,17 +34,8 @@ export default function LandingPage() {
 
             <div className="landing landing--full landing--page">
                 <LandingHeader />
-
                 <main id="main" className="landing__main">
                     <LandingHero lang={lang} />
-                    {/*!cancelled && (
-                        <p
-                            className="landing__redirectHint text-center mt-4"
-                            aria-live="polite"
-                        >
-                            {t("redirecting", { seconds: remaining })}
-                        </p>
-                    )*/}
                 </main>
             </div>
         </>

@@ -58,7 +58,10 @@ export default function CheckoutPage() {
   }, []);
 
   const totals = useMemo(() => {
-    const subtotal = items.reduce((acc, it) => acc + Number(it.price || 0) * Number(it.qty || 1), 0);
+    const subtotal = items.reduce(
+        (acc, it) => acc + Number(it.price || 0) * Number(it.qty || 1),
+        0
+    );
     const shipping = subtotal > 0 ? 2.5 : 0;
     const taxes = subtotal * 0.12;
     const total = subtotal + shipping + taxes;
@@ -68,7 +71,12 @@ export default function CheckoutPage() {
   const payDisabled = useMemo(() => {
     if (loading || items.length === 0) return true;
     if (method === "card") {
-      return !cardName.trim() || cardNumber.replace(/\s/g, "").length < 12 || !cardExp.trim() || cardCvc.trim().length < 3;
+      return (
+          !cardName.trim() ||
+          cardNumber.replace(/\s/g, "").length < 12 ||
+          !cardExp.trim() ||
+          cardCvc.trim().length < 3
+      );
     }
     return false;
   }, [loading, items.length, method, cardName, cardNumber, cardExp, cardCvc]);
@@ -78,7 +86,6 @@ export default function CheckoutPage() {
     if (payDisabled) return;
 
     console.log("PAY", { method, totals, items });
-
     setPaid(true);
   };
 
@@ -87,86 +94,103 @@ export default function CheckoutPage() {
   const seoKeywords = t("seo.keywords");
 
   return (
-    <div className="checkoutPage pay--full">
-      <Head
-        lang={lang}
-        title={seoTitle}
-        description={seoDescription}
-        keywords={seoKeywords}
-        canonical={canonical}
-        ogImage="/assets/img/og-checkout.jpg"
-        siteName="Librería dígital"
-        locale={lang === "es" ? "es_EC" : "en_US"}
-      />
+      <div className="checkoutPage pay--full">
+        <Head
+            lang={lang}
+            title={seoTitle}
+            description={seoDescription}
+            keywords={seoKeywords}
+            canonical={canonical}
+            ogImage="/assets/img/og-checkout.jpg"
+            siteName="Librería dígital"
+            locale={lang === "es" ? "es_EC" : "en_US"}
+        />
 
-      <CheckoutHeader lang={lang} />
+        <CheckoutHeader lang={lang} />
 
-      <main className="pay__content">
-        <div className="container-fluid px-0 px-lg-3">
-          {loading ? (
-            <div className="panel panel--elevated">
-              <div className="panel__body">{lang === "en" ? "Loading…" : "Cargando…"}</div>
-            </div>
-          ) : items.length === 0 ? (
-            <div className="panel panel--elevated">
-              <div className="panel__body">
-                {lang === "en" ? "Your cart is empty." : "Tu carrito está vacío."}{" "}
-                <Link to={`/${lang}/catalog`}>{lang === "en" ? "Go to catalog" : "Ir al catálogo"}</Link>
-              </div>
-            </div>
-          ) : (
-            <div className="row g-3 align-items-start">
-              <section className="col-12 col-lg-7" aria-label="Pago">
-                <PayBanner />
-
-                {!paid ? (
-                  <form onSubmit={onPay} className="mt-3" aria-label="Formulario de pago">
-                    <PayMethods method={method} onChange={setMethod} />
-
-                    {method === "card" && (
-                      <div className="mt-3">
-                        <CardForm
-                          cardName={cardName}
-                          setCardName={setCardName}
-                          cardNumber={cardNumber}
-                          setCardNumber={setCardNumber}
-                          cardExp={cardExp}
-                          setCardExp={setCardExp}
-                          cardCvc={cardCvc}
-                          setCardCvc={setCardCvc}
-                        />
-                      </div>
-                    )}
-
-                    <div className="d-flex gap-2 mt-3">
-                      <Link className="btn pay__ghostBtn" to={`/${lang}/cart`}>
-                        {t("actions.back")}
-                      </Link>
-
-                      <button className="btn pay__primaryBtn ms-auto" type="submit" disabled={payDisabled}>
-                        {t("actions.pay")}
-                      </button>
-                    </div>
-                  </form>
-                ) : (
-                  <div className="mt-3">
-                    <ConfirmPanel method={method} />
-                    <div className="d-flex gap-2 mt-3">
-                      <Link className="btn confirm__btn confirm__btn--ghost" to={`/${lang}/catalog`}>
-                        {t("actions.continue")}
-                      </Link>
-                    </div>
+        <main className="pay__content">
+          <div className="container-fluid px-0 px-lg-3">
+            {loading ? (
+                <div className="panel panel--elevated">
+                  <div className="panel__body">
+                    {lang === "en" ? "Loading…" : "Cargando…"}
                   </div>
-                )}
-              </section>
+                </div>
+            ) : items.length === 0 ? (
+                <div className="panel panel--elevated">
+                  <div className="panel__body">
+                    {lang === "en"
+                        ? "Your cart is empty."
+                        : "Tu carrito está vacío."}{" "}
+                    <Link to={`/${lang}/catalog`}>
+                      {lang === "en" ? "Go to catalog" : "Ir al catálogo"}
+                    </Link>
+                  </div>
+                </div>
+            ) : (
+                <div className="row g-3 align-items-start">
+                  <section className="col-12 col-lg-7" aria-label="Pago">
+                    <PayBanner />
 
-              <aside className="col-12 col-lg-5" aria-label="Resumen del pedido">
-                <OrderSummary lang={lang} items={items} totals={totals} />
-              </aside>
-            </div>
-          )}
-        </div>
-      </main>
-    </div>
+                    {!paid ? (
+                        <form
+                            onSubmit={onPay}
+                            className="mt-3"
+                            aria-label="Formulario de pago"
+                        >
+                          <PayMethods method={method} onChange={setMethod} />
+
+                          {method === "card" && (
+                              <div className="mt-3">
+                                <CardForm
+                                    cardName={cardName}
+                                    setCardName={setCardName}
+                                    cardNumber={cardNumber}
+                                    setCardNumber={setCardNumber}
+                                    cardExp={cardExp}
+                                    setCardExp={setCardExp}
+                                    cardCvc={cardCvc}
+                                    setCardCvc={setCardCvc}
+                                />
+                              </div>
+                          )}
+
+                          <div className="d-flex gap-2 mt-3">
+                            <Link className="btn pay__ghostBtn" to={`/${lang}/cart`}>
+                              {t("actions.back")}
+                            </Link>
+
+                            <button
+                                className="btn pay__primaryBtn ms-auto"
+                                type="submit"
+                                disabled={payDisabled}
+                            >
+                              {t("actions.pay")}
+                            </button>
+                          </div>
+                        </form>
+                    ) : (
+                        <div className="mt-3">
+                          <ConfirmPanel />
+                          <div className="d-flex gap-2 mt-3">
+                            <Link
+                                className="btn confirm__btn confirm__btn--ghost"
+                                to={`/${lang}/catalog`}
+                            >
+                              {t("actions.continue")}
+                            </Link>
+                          </div>
+                        </div>
+                    )}
+                  </section>
+
+                  <aside className="col-12 col-lg-5" aria-label="Resumen del pedido">
+                    <OrderSummary lang={lang} items={items} totals={totals} />
+                  </aside>
+                </div>
+            )}
+          </div>
+        </main>
+      </div>
   );
 }
