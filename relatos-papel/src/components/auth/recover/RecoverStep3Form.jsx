@@ -2,6 +2,8 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useTogglePassword } from "../../../hooks/useTogglePassword";
 import { useRecoveryStep3 } from "../../../hooks/useRecoveryStep3";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 
 export default function RecoverStep3Form() {
   const { lang } = useParams();
@@ -16,32 +18,56 @@ export default function RecoverStep3Form() {
     setNewPassword,
     confirmPassword,
     setConfirmPassword,
-    touched,
-    setTouched,
-    minLenOk,
-    matchOk,
-    canSubmit,
     statusMsg,
     setStatusMsg
   } = useRecoveryStep3();
 
-  const showNewPassError = touched.newPassword && !minLenOk;
-  const showConfirmError = touched.confirmPassword && !matchOk;
+    const validationSchema = Yup.object({
+        newPassword: Yup.string()
+            .min(8, t("form.newPassword.error"))
+            .required(t("form.status.invalid")),
+        confirmPassword: Yup.string()
+            .oneOf([Yup.ref("newPassword")], t("form.confirmPassword.error"))
+            .required(t("form.status.invalid")),
+    });
 
-  const onSubmit = (e) => {
-    e.preventDefault();
+    const formik = useFormik({
+        initialValues: {
+            newPassword: "",
+            confirmPassword: "",
+        },
 
-    setTouched({ newPassword: true, confirmPassword: true });
+        validationSchema,
+        validateOnBlur: true,
+        validateOnChange: false,
+        onSubmit: async (values, helpers) => {
+            try {
+                helpers.setStatus(null);
 
-    if (!canSubmit) {
-      setStatusMsg(t("form.status.invalid"));
-      return;
-    }
+                const payload = {
+                    password: values.newPassword
+                };
 
-    setStatusMsg(t("form.status.ok"));
+                // Llamado a la API
+                console.log("Nueva contraseña", payload);
 
-    navigate(`/${lang}/auth/sign-in`, { replace: true });
-  };
+                setNewPassword(values.newPassword);
+                setConfirmPassword(values.confirmPassword);//sincroniza con el HOOK
+
+                setStatusMsg(t("form.status.ok"));
+
+                //Redireccion
+                navigate(`/${lang}/auth/sign-in`);
+
+            } catch (err) {
+                setStatusMsg(t("form.status.invalid"));
+            } finally {
+                helpers.setSubmitting(false);
+            }
+        },
+    });
+
+    const showError = (field) => Boolean(formik.touched[field] && formik.errors[field]);
 
   return (
     <form
@@ -49,87 +75,98 @@ export default function RecoverStep3Form() {
       className="auth__form"
       noValidate
       aria-label={t("form.aria")}
-      onSubmit={onSubmit}
+      onSubmit={formik.handleSubmit}
     >
-      <div className="visually-hidden" id="formStatus" role="status" aria-live="polite">
-        {statusMsg}
-      </div>
+        <div className="visually-hidden" role="status" aria-live="polite">
+            {statusMsg}
+        </div>
 
       <div className="mb-3">
         <label className="auth__label form-label" htmlFor="newPassword">
           {t("form.newPassword.label")}
         </label>
 
-        <div className="position-relative auth__inputGroup">
+        <div className="input-group">
           <input
-            className={`form-control form-control-sm auth__input pe-5 ${showNewPassError ? "is-invalid" : ""}`}
+              className={`form-control form-control-sm auth__input ${
+                  showError("newPassword") ? "is-invalid" : ""}`}
             id="newPassword"
             name="newPassword"
             type={np.type}
-            autoComplete="new-password"
             placeholder={t("form.newPassword.placeholder")}
-            minLength={8}
-            required
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            onBlur={() => setTouched((p) => ({ ...p, newPassword: true }))}
-            aria-describedby="newPasswordError"
+              autoComplete="new-password"
+              value={formik.values.newPassword}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              aria-invalid={showError("newPassword")}
+              aria-describedby={showError("newPassword") ? "newPassword-error" : undefined}
           />
 
           <button
             type="button"
-            className="auth__togglePass"
+            className="btn btn-outline-secondary"
             onClick={np.toggle}
-            aria-label={np.type === "text" ? t("form.hide") : t("form.show")}
-            aria-pressed={np.type === "text"}
+            aria-label={np.type === "password" ? t("form.show") : t("form.hide")}
           >
-            <i className={`far ${np.icon}`} aria-hidden="true"></i>
+            < i className={`fa ${np.icon}`}/>
           </button>
 
-          <div id="newPasswordError" className="invalid-feedback">
-            {t("form.newPassword.error")}
-          </div>
+            {showError("newPassword") && (
+                <div id="newPassword-error" className="invalid-feedback">
+                    {formik.errors.newPassword}
+                </div>
+            )}
         </div>
       </div>
 
-      <div className="mb-3">
-        <label className="auth__label form-label" htmlFor="confirmPassword">
-          {t("form.confirmPassword.label")}
-        </label>
+        <div className="mb-3">
+            <label className="auth__label form-label" htmlFor="confirmPassword">
+                {t("form.confirmPassword.label")}
+            </label>
+            <div className="input-group">
+                <input
+                    className={`form-control form-control-sm auth__input ${
+                        showError("confirmPassword") ? "is-invalid" : ""}`}
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={cp.type}
+                    placeholder={t("form.confirmPassword.placeholder")}
+                    autoComplete="new-password"
+                    value={formik.values.confirmPassword}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    aria-invalid={showError("confirmPassword")}
+                    aria-describedby={showError("confirmPassword") ? "confirmPassword-error" : undefined}
+                />
 
-        <div className="position-relative auth__inputGroup">
-          <input
-            className={`form-control form-control-sm auth__input pe-5 ${showConfirmError ? "is-invalid" : ""}`}
-            id="confirmPassword"
-            name="confirmPassword"
-            type={cp.type}
-            autoComplete="new-password"
-            placeholder={t("form.confirmPassword.placeholder")}
-            required
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            onBlur={() => setTouched((p) => ({ ...p, confirmPassword: true }))}
-            aria-describedby="confirmPasswordError"
-          />
+                <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={cp.toggle}
+                    aria-label={cp.type === "password" ? t("form.show") : t("form.hide")}
+                >
+                    < i className={`fa ${cp.icon}`}/>
+                </button>
 
-          <button
-            type="button"
-            className="auth__togglePass"
-            onClick={cp.toggle}
-            aria-label={cp.type === "text" ? t("form.hide") : t("form.show")}
-            aria-pressed={cp.type === "text"}
-          >
-            <i className={`far ${cp.icon}`} aria-hidden="true"></i>
-          </button>
-
-          <div id="confirmPasswordError" className="invalid-feedback">
-            {t("form.confirmPassword.error")}
-          </div>
+                {showError("confirmPassword") && (
+                    <div id="confirmPassword-error" className="invalid-feedback">
+                        {formik.errors.confirmPassword}
+                    </div>
+                )}
+            </div>
         </div>
-      </div>
 
-      <button type="submit" className="btn auth__submit w-100" id="btnActualizar">
-        {t("form.submit")}
+        {formik.status && (
+            <div className="alert alert-danger py-2" role="alert">
+                {formik.status}
+            </div>
+        )}
+
+      <button type="submit" className="btn auth__submit w-100" id="btnActualizar"
+              disabled={formik.isSubmitting}
+              aria-busy={formik.isSubmitting}
+      >
+          {formik.isSubmitting ? "Actualizando..." : t("form.submit")}
       </button>
 
       <p className="auth__footerLine mt-3 mb-0">

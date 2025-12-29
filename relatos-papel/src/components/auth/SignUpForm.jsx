@@ -1,109 +1,13 @@
-/* import { useTogglePassword } from "../../hooks/useTogglePassword";
-import { Link, useParams } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-
-export default function SignUpForm() {
-  const { lang } = useParams();
-  const { t } = useTranslation("signup");
-  const pass = useTogglePassword();
-
-  return (
-    <form
-      id="registro-form"
-      className="auth__form"
-      noValidate
-      aria-label={t("form.aria")}
-    >
-      <div className="mb-3">
-        <label className="auth__label form-label" htmlFor="email">
-          {t("form.email.label")}
-        </label>
-        <input
-          id="email"
-          className="form-control form-control-sm auth__input"
-          type="email"
-          required
-          placeholder={t("form.email.placeholder")}
-        />
-      </div>
-
-      <div className="mb-3">
-        <label className="auth__label form-label" htmlFor="name">
-          {t("form.name.label")}
-        </label>
-        <input
-          id="name"
-          className="form-control form-control-sm auth__input"
-          type="text"
-          required
-          placeholder={t("form.name.placeholder")}
-        />
-      </div>
-
-      <div className="mb-3">
-        <label className="auth__label form-label" htmlFor="password">
-          {t("form.password.label")}
-        </label>
-
-        <div className="position-relative auth__inputGroup">
-          <input
-            id="password"
-            className="form-control form-control-sm auth__input pe-5"
-            type={pass.type}
-            required
-            minLength={8}
-            placeholder={t("form.password.placeholder")}
-          />
-
-          <button
-            type="button"
-            className="auth__togglePass"
-            onClick={pass.toggle}
-            aria-label={
-              pass.type === "text"
-                ? t("form.password.hide")
-                : t("form.password.show")
-            }
-            aria-pressed={pass.type === "text"}
-          >
-            <i className={`far ${pass.icon}`} />
-          </button>
-        </div>
-
-        <small className="text-muted d-block mt-1">
-          {t("form.password.hint")}
-        </small>
-      </div>
-
-      <button type="submit" className="btn auth__submit w-100">
-        {t("form.submit")}
-      </button>
-
-      <p className="auth__footerLine mt-3 mb-0">
-        {t("form.footer.question")}{" "}
-        <Link to={`/${lang}/auth/sign-in`} className="text-decoration-none">
-          {t("form.footer.link")}
-        </Link>
-      </p>
-    </form>
-  );
-} */
-
-
-
-
-
-
-
 import { useMemo } from "react";
 import { useTogglePassword } from "../../hooks/useTogglePassword";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 
 export default function SignUpForm() {
     const { lang } = useParams();
+    const navigate = useNavigate();
     const { t } = useTranslation("signup");
 
     const pass = useTogglePassword();
@@ -153,8 +57,10 @@ export default function SignUpForm() {
                 };
 
                 // Llamado a la API
-
                 console.log("Datos", payload);
+
+                //Redireccion
+                navigate(`/${lang}/catalog`);
 
                 helpers.resetForm();
             } catch (err) {
@@ -211,6 +117,7 @@ export default function SignUpForm() {
                     </div>
                 )}
             </div>
+
             <div className="mb-3">
                 <label className="auth__label form-label" htmlFor="name">
                     {t("form.name.label")}
@@ -234,72 +141,6 @@ export default function SignUpForm() {
                     </div>
                 )}
             </div>
-            {/* <div className="mb-3">
-                <label className="auth__label form-label" htmlFor="password">
-                    {t("form.password.label")}
-                </label>
-                <div className="position-relative auth__inputGroup">
-                    <input
-                        id="password"
-                        name="password"
-                        className={`form-control form-control-sm auth__input pe-5 ${showError("password") ? "is-invalid" : ""}`}
-                        type={pass.type}
-                        placeholder={t("form.password.placeholder")}
-                        autoComplete="new-password"
-                        value={formik.values.password}
-                        onChange={formik.handleChange}
-                        onBlur={formik.handleBlur}
-                        aria-invalid={showError("password")}
-                        aria-describedby={showError("password") ? "password-error" : "password-hint"}
-                    />
-                    <button
-                        type="button"
-                        className="auth__togglePass"
-                        onClick={pass.toggle}
-                        aria-label={pass.type === "text" ? t("form.password.hide") : t("form.password.show")}
-                        aria-pressed={pass.type === "text"}
-                    >
-                        <i className={`far ${pass.icon}`} />
-                    </button>
-                    {showError("password") && (
-                        <div id="password-error" className="invalid-feedback d-block">
-                            {formik.errors.password}
-                        </div>
-                    )}
-                </div>
-            </div> */}
-
-            {/* <div className="position-relative auth__inputGroup">
-                <input
-                    id="password"
-                    name="password"
-                    className={`form-control form-control-sm auth__input pe-5 ${showError("password") ? "is-invalid" : ""}`}
-                    type={pass.type}
-                    placeholder={t("form.password.placeholder")}
-                    autoComplete="new-password"
-                    value={formik.values.password}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    aria-invalid={showError("password")}
-                    aria-describedby={showError("password") ? "password-error" : "password-hint"}
-                />
-
-                <button
-                    type="button"
-                    className={`auth__togglePass ${showError("password") ? "auth__togglePass--withError" : ""}`}
-                    onClick={pass.toggle}
-                    aria-label={pass.type === "text" ? t("form.password.hide") : t("form.password.show")}
-                    aria-pressed={pass.type === "text"}
-                >
-                    <i className={`far ${pass.icon}`} />
-                </button>
-
-                {showError("password") && (
-                    <div id="password-error" className="invalid-feedback d-block">
-                        {formik.errors.password}
-                    </div>
-                )}
-            </div> */}
 
             <div className="auth__inputGroup mb-3">
                 <label className="auth__label form-label" htmlFor="password">
