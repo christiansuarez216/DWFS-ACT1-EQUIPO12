@@ -1,12 +1,13 @@
 import { useMemo } from "react";
 import { useTogglePassword } from "../../hooks/useTogglePassword";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 
 export default function SignUpForm() {
     const { lang } = useParams();
+    const navigate = useNavigate();
     const { t } = useTranslation("signup");
 
     const pass = useTogglePassword();
@@ -58,6 +59,9 @@ export default function SignUpForm() {
                 // Llamado a la API
                 
                 console.log("Datos", payload);
+
+                //Redireccion
+                navigate(`/${lang}/catalog`);
 
                 helpers.resetForm();
             } catch (err) {
@@ -114,6 +118,7 @@ export default function SignUpForm() {
                     </div>
                 )}
             </div>
+
             <div className="mb-3">
                 <label className="auth__label form-label" htmlFor="name">
                     {t("form.name.label")}
@@ -137,6 +142,7 @@ export default function SignUpForm() {
                     </div>
                 )}
             </div>
+
             <div className="auth__inputGroup mb-3">
                 <label className="auth__label form-label" htmlFor="password">
                     {t("form.password.label")}

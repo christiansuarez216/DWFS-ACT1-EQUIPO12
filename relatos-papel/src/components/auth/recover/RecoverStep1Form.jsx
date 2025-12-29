@@ -1,6 +1,8 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useRecoveryStep1 } from "../../../hooks/useRecoveryStep1";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 
 export default function RecoverStep1Form() {
   const { lang } = useParams();
@@ -10,28 +12,50 @@ export default function RecoverStep1Form() {
   const {
     email,
     setEmail,
-    touched,
-    setTouched,
-    isValid,
     statusMsg,
     setStatusMsg
   } = useRecoveryStep1();
 
-  const showError = touched && !isValid;
+    const validationSchema = Yup.object({
+        email: Yup.string()
+            .trim()
+            .email(t("form.email.error"))
+            .required(t("form.status.invalid")),
+    });
 
-  const onSubmit = (e) => {
-    e.preventDefault();
-    setTouched(true);
+    const formik = useFormik({
+        initialValues: {
+            email: "",
+        },
+        validationSchema,
+        validateOnBlur: true,
+        validateOnChange: false,
+        onSubmit: async (values, helpers) => {
+            try {
+                helpers.setStatus(null);
 
-    if (!isValid) {
-      setStatusMsg(t("form.status.invalid"));
-      return;
-    }
+                const payload = {
+                    email: values.email.trim(),
+                };
 
-    setStatusMsg(t("form.status.ok"));
+                // Llamado a la API
+                console.log("Email", payload);
 
-    navigate(`/${lang}/auth/recover/step-2`);
-  };
+                setEmail(values.email); //sincroniza con el HOOK
+
+                setStatusMsg(t("form.status.ok"));
+
+                //Redireccion
+                navigate(`/${lang}/auth/recover/step-2`);
+            } catch (err) {
+                setStatusMsg(t("form.status.invalid"));
+            } finally {
+                helpers.setSubmitting(false);
+            }
+        },
+    });
+
+    const showError = (field) => Boolean(formik.touched[field] && formik.errors[field]);
 
   return (
     <form
@@ -39,7 +63,7 @@ export default function RecoverStep1Form() {
       className="auth__form"
       noValidate
       aria-label={t("form.aria")}
-      onSubmit={onSubmit}
+      onSubmit={formik.handleSubmit}
     >
       <div className="visually-hidden" id="formStatus" role="status" aria-live="polite">
         {statusMsg}
@@ -51,27 +75,39 @@ export default function RecoverStep1Form() {
         </label>
 
         <input
-          className={`form-control form-control-sm auth__input ${showError ? "is-invalid" : ""}`}
+          className={`form-control form-control-sm auth__input 
+          ${showError("email") ? "is-invalid" : ""}`}
           id="email"
           name="email"
           type="email"
           inputMode="email"
           placeholder={t("form.email.placeholder")}
           autoComplete="email"
-          required
-          aria-describedby="emailError"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          onBlur={() => setTouched(true)}
+          value={formik.values.email}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          aria-invalid={showError("email")}
+          aria-describedby={showError("email") ? "email-error" : undefined}
         />
 
-        <div id="emailError" className="invalid-feedback">
-          {t("form.email.error")}
-        </div>
+          {showError("email") && (
+              <div id="email-error" className="invalid-feedback">
+                  {formik.errors.email}
+              </div>
+          )}
       </div>
 
-      <button type="submit" className="btn auth__submit w-100" id="btnSolicitar">
-        {t("form.submit")}
+        {formik.status && (
+            <div className="alert alert-danger py-2" role="alert">
+                {formik.status}
+            </div>
+        )}
+
+      <button type="submit" className="btn auth__submit w-100" id="btnSolicitar"
+              disabled={formik.isSubmitting}
+              aria-busy={formik.isSubmitting}
+      >
+          {formik.isSubmitting ? "Validando..." : t("form.submit")}
       </button>
 
       <p className="auth__footerLine mt-3 mb-0">
