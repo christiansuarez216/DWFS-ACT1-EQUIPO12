@@ -161,6 +161,7 @@ export default function BookDetail({ lang, book }) {
                   type="button"
                   aria-label={t("detail.addToCart")}
                   onClick={handleAddToCart}
+                  disabled={!book.inStock || book.statusI18n?.es === "Agotado"}
                 >
                   <i className="fa-solid fa-cart-plus" aria-hidden="true"></i>
                   {t("detail.addToCart")}
