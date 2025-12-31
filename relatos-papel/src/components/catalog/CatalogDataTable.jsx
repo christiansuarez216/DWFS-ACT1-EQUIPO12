@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import $ from "jquery";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -9,11 +9,10 @@ import "datatables.net-bs5";
 
 export default function CatalogDataTable({ lang, rows, onReady }) {
     const { t } = useTranslation("catalog");
+    const navigate = useNavigate();
 
     const tableRef = useRef(null);
     const dtRef = useRef(null);
-    const prevLangRef = useRef(lang);
-    const navigate = useNavigate();
     const clickBoundRef = useRef(false);
 
     const dtLangUrl =
@@ -21,38 +20,21 @@ export default function CatalogDataTable({ lang, rows, onReady }) {
             ? "https://cdn.datatables.net/plug-ins/1.13.8/i18n/en-GB.json"
             : "https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-ES.json";
 
-
-    useEffect(() => {
-        if (!tableRef.current) return;
-
-        const langChanged = prevLangRef.current !== lang;
-
-
-        if (dtRef.current && !langChanged) {
-            dtRef.current.clear();
-            dtRef.current.rows.add(rows);
-            dtRef.current.draw();
-            return;
-        }
-
-
-        if (dtRef.current && langChanged) {
-            dtRef.current.destroy();
-            dtRef.current = null;
-        }
-
-        const columns = [
+    const columns = useMemo(
+        () => [
             {
                 data: "cover",
                 orderable: false,
                 searchable: false,
                 render: {
-                    display: (cover, type, row) => `
+                    display: (cover, _, row) => `
                         <img class="bookCover"
                              src="${cover}"
-                             width="96" height="136"
+                             width="96"
+                             height="136"
                              alt="${t("table.coverAltPrefix")} ${row.title}"
-                             loading="lazy" decoding="async" />
+                             loading="lazy"
+                             decoding="async" />
                     `
                 }
             },
@@ -134,10 +116,16 @@ export default function CatalogDataTable({ lang, rows, onReady }) {
                     }
                 }
             }
-        ];
+        ],
+        [lang, t]
+    );
 
-        const dt = $(tableRef.current).DataTable({
-            data: rows,
+    // Inicializar DataTable solo una vez
+    useEffect(() => {
+        if (!tableRef.current || dtRef.current) return;
+
+        dtRef.current = $(tableRef.current).DataTable({
+            data: [],
             columns,
             pageLength: 6,
             lengthChange: false,
@@ -147,31 +135,34 @@ export default function CatalogDataTable({ lang, rows, onReady }) {
             dom: "rt<'d-flex justify-content-between align-items-center mt-3'p>"
         });
 
-        dtRef.current = dt;
-        prevLangRef.current = lang;
+        if (onReady) onReady(dtRef.current);
+    }, []);
 
-        if (onReady) onReady(dt);
-    }, [rows, lang, dtLangUrl, t, onReady]);
+    // Actualizar filas sin duplicar
+    useEffect(() => {
+        if (!dtRef.current) return;
 
+        dtRef.current.clear();
+        dtRef.current.rows.add(rows);
+        dtRef.current.draw(false);
+    }, [rows]);
+
+    // Delegación de eventos (view / add)
     useEffect(() => {
         if (!tableRef.current || clickBoundRef.current) return;
 
         const tableEl = tableRef.current;
 
         const handleClick = (e) => {
-            const viewBtn = e.target.closest("button[data-action='view']");
-            const addBtn = e.target.closest("button[data-action='add']");
+            const viewBtn = e.target.closest("[data-action='view']");
+            const addBtn = e.target.closest("[data-action='add']");
 
             if (viewBtn) {
-                const slug = viewBtn.getAttribute("data-href");
-                if (slug) navigate(`/${lang}/catalog/book/${slug}`);
-                return;
+                navigate(`/${lang}/catalog/book/${viewBtn.dataset.href}`);
             }
 
             if (addBtn) {
-                const id = addBtn.getAttribute("data-id");
-                const book = rows.find((b) => b.id === id);
-
+                const book = rows.find((b) => b.id === addBtn.dataset.id);
                 if (book && book.inStock && book.statusI18n?.es !== "Agotado") {
                     addToCart(book);
                     navigate(`/${lang}/cart`);
@@ -188,34 +179,22 @@ export default function CatalogDataTable({ lang, rows, onReady }) {
         };
     }, [lang, navigate, rows]);
 
-    useEffect(() => {
-        return () => {
-            if (dtRef.current) {
-                dtRef.current.destroy();
-                dtRef.current = null;
-            }
-        };
-    }, []);
-
     return (
         <table
             ref={tableRef}
-            id="booksTable"
             className="table table-borderless align-middle w-100 booksTable"
             aria-label={t("table.aria")}
         >
             <thead className="booksTable__head">
             <tr>
-                <th className="booksTable__th">{t("table.th.cover")}</th>
-                <th className="booksTable__th">{t("table.th.title")}</th>
-                <th className="booksTable__th">{t("table.th.author")}</th>
-                <th className="booksTable__th">{t("table.th.genre")}</th>
-                <th className="booksTable__th">{t("table.th.rating")}</th>
-                <th className="booksTable__th">{t("table.th.price")}</th>
-                <th className="booksTable__th">{t("table.th.status")}</th>
-                <th className="booksTable__th text-end">
-                    {t("table.th.actions")}
-                </th>
+                <th>{t("table.th.cover")}</th>
+                <th>{t("table.th.title")}</th>
+                <th>{t("table.th.author")}</th>
+                <th>{t("table.th.genre")}</th>
+                <th>{t("table.th.rating")}</th>
+                <th>{t("table.th.price")}</th>
+                <th>{t("table.th.status")}</th>
+                <th className="text-end">{t("table.th.actions")}</th>
             </tr>
             </thead>
             <tbody />
